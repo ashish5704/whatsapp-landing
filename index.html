@@ -54,15 +54,11 @@
       background-color: #4CAF50;
       color: white;
     }
-
-    #noBtn:active {
-      transform: scale(0.96);
-    }
   </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="mainBox">
   <h2>Are you still angry on me? 🥺</h2>
   <button id="yesBtn" onclick="goYes()">Yes</button>
   <button id="noBtn" onclick="goNo()">No</button>
@@ -82,13 +78,16 @@ function goYes() {
   btn.style.top = (Math.random() * 150 - 75) + "px";
 }
 
-/* NO tries to close page */
+/* NO shows message → waits → tries to close */
 function goNo() {
-  window.open('', '_self');
-  window.close();
+  const box = document.getElementById("mainBox");
 
-  // fallback (mobile browsers often block close)
-  document.body.innerHTML = "<h2 style='text-align:center;margin-top:50px;'>Thank you 🙂</h2>";
+  box.innerHTML = "<h2>Thank you 🙂</h2>";
+
+  setTimeout(() => {
+    window.open('', '_self');
+    window.close();
+  }, 2000);
 }
 </script>
 
