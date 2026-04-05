@@ -16,30 +16,33 @@
     }
 
     .container {
-      position: relative;
       text-align: center;
       background: white;
       padding: 30px 20px 80px;
       border-radius: 20px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2);
       width: 90%;
-      max-width: 350px;
-      height: 300px;
-      overflow: hidden;
+      max-width: 360px;
+      position: relative;
     }
 
     h2 {
-      margin: 0;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       font-size: 22px;
+      color: #333;
+    }
+
+    .btn-area {
+      position: relative;
+      height: 160px; /* movement zone */
     }
 
     button {
       position: absolute;
-      padding: 14px 22px;
+      padding: 14px 20px;
       font-size: 16px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
       transition: all 0.2s ease;
     }
@@ -48,15 +51,14 @@
       background: #ff4d6d;
       color: white;
       left: 20px;
-      top: 80px;
+      top: 20px;
     }
 
     #noBtn {
       background: #4CAF50;
       color: white;
-      bottom: 15px;
-      left: 50%;
-      transform: translateX(-50%);
+      right: 20px;
+      bottom: 20px;
     }
   </style>
 </head>
@@ -64,15 +66,18 @@
 
 <div class="container" id="box">
   <h2 id="title">Are you still angry on me? 🥺</h2>
-  <button id="yesBtn">Yes</button>
-  <button id="noBtn">No</button>
+
+  <div class="btn-area" id="area">
+    <button id="yesBtn">Yes</button>
+    <button id="noBtn">No</button>
+  </div>
 </div>
 
 <script>
 let scale = 1;
 let index = 0;
 
-let messages = [
+const messages = [
   "Are you still angry on me? 🥺",
   "Really? 😟",
   "Still?? 😭",
@@ -80,59 +85,72 @@ let messages = [
   "You’re not giving up huh 😤"
 ];
 
-// 🔊 audio (iPhone fix)
+// 🔊 iPhone-safe audio
 const audio = new Audio("https://www.soundjay.com/human/sounds/aww-01.mp3");
-let audioUnlocked = false;
+let unlocked = false;
 
-document.body.addEventListener("touchstart", unlockAudio, { once: true });
-document.body.addEventListener("click", unlockAudio, { once: true });
-
-function unlockAudio() {
-  audio.play().then(() => {
-    audio.pause();
-    audio.currentTime = 0;
-    audioUnlocked = true;
-  }).catch(() => {});
-}
+document.body.addEventListener("click", () => {
+  if (!unlocked) {
+    audio.play().then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+      unlocked = true;
+    }).catch(()=>{});
+  }
+}, { once: true });
 
 const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
-const box = document.getElementById("box");
+const area = document.getElementById("area");
 const title = document.getElementById("title");
 
 yesBtn.addEventListener("click", moveYes);
 noBtn.addEventListener("click", goNo);
 
 function moveYes() {
-  // 🔊 sound (now works better on iPhone)
-  if (audioUnlocked) {
+
+  // 🔊 sound
+  if (unlocked) {
     audio.currentTime = 0;
     audio.play();
   }
 
-  // ❌ vibration skipped (not supported on iPhone)
+  // 📳 vibration (Android only)
+  if (navigator.vibrate) {
+    navigator.vibrate(80);
+  }
 
   // shrink
   scale *= 0.85;
   yesBtn.style.transform = `scale(${scale})`;
 
-  // SAFE movement inside container
-  const boxRect = box.getBoundingClientRect();
+  const areaRect = area.getBoundingClientRect();
   const btnRect = yesBtn.getBoundingClientRect();
+  const noRect = noBtn.getBoundingClientRect();
 
-  const padding = 10;
+  let tries = 0;
+  let safe = false;
 
-  const minX = padding;
-  const maxX = box.clientWidth - btnRect.width - padding;
+  while (!safe && tries < 30) {
 
-  const minY = 70; // below title
-  const maxY = box.clientHeight - 80; // above NO button
+    let x = Math.random() * (area.clientWidth - btnRect.width);
+    let y = Math.random() * (area.clientHeight - btnRect.height);
 
-  let x = Math.random() * (maxX - minX) + minX;
-  let y = Math.random() * (maxY - minY) + minY;
+    yesBtn.style.left = x + "px";
+    yesBtn.style.top = y + "px";
 
-  yesBtn.style.left = x + "px";
-  yesBtn.style.top = y + "px";
+    const newRect = yesBtn.getBoundingClientRect();
+
+    // avoid NO button overlap
+    safe = !(
+      newRect.right > noRect.left &&
+      newRect.left < noRect.right &&
+      newRect.bottom > noRect.top &&
+      newRect.top < noRect.bottom
+    );
+
+    tries++;
+  }
 
   // change message
   index = (index + 1) % messages.length;
@@ -140,7 +158,8 @@ function moveYes() {
 }
 
 function goNo() {
-  box.innerHTML = "<h2>Okay 🙂</h2>";
+  const box = document.getElementById("box");
+  box.innerHTML = "<h2>Thank you 🙂</h2>";
 
   setTimeout(() => {
     window.open('', '_self');
