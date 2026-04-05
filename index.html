@@ -24,6 +24,7 @@
       width: 90%;
       max-width: 350px;
       position: relative;
+      overflow: hidden;
     }
 
     h2 {
@@ -40,7 +41,7 @@
       border-radius: 12px;
       cursor: pointer;
       margin: 10px 0;
-      transition: all 0.25s ease;
+      transition: all 0.2s ease;
     }
 
     #yesBtn {
@@ -76,7 +77,7 @@ let messages = [
 
 let index = 0;
 
-// 🎵 preload sound
+// 🔊 sound
 const awwSound = new Audio("https://www.soundjay.com/human/sounds/aww-01.mp3");
 
 function moveYes() {
@@ -84,11 +85,11 @@ function moveYes() {
   const noBtn = document.getElementById("noBtn");
   const title = document.getElementById("title");
 
-  // 🔊 play sound
+  // 🔊 sound
   awwSound.currentTime = 0;
   awwSound.play();
 
-  // 📳 vibrate (if supported)
+  // 📳 vibration
   if (navigator.vibrate) {
     navigator.vibrate(100);
   }
@@ -100,7 +101,7 @@ function moveYes() {
   let tries = 0;
   let safe = false;
 
-  while (!safe && tries < 20) {
+  while (!safe && tries < 30) {
     let x = Math.random() * 200 - 100;
     let y = Math.random() * 200 - 100;
 
@@ -109,13 +110,25 @@ function moveYes() {
 
     const yesRect = yesBtn.getBoundingClientRect();
     const noRect = noBtn.getBoundingClientRect();
+    const titleRect = title.getBoundingClientRect();
 
-    safe = !(
+    // 🚫 avoid overlapping NO button
+    const overlapNo = (
       yesRect.right > noRect.left &&
       yesRect.left < noRect.right &&
       yesRect.bottom > noRect.top &&
       yesRect.top < noRect.bottom
     );
+
+    // 🚫 avoid overlapping MESSAGE
+    const overlapTitle = (
+      yesRect.right > titleRect.left &&
+      yesRect.left < titleRect.right &&
+      yesRect.bottom > titleRect.top &&
+      yesRect.top < titleRect.bottom
+    );
+
+    safe = !(overlapNo || overlapTitle);
 
     tries++;
   }
