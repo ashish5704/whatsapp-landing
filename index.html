@@ -16,43 +16,47 @@
     }
 
     .container {
+      position: relative;
       text-align: center;
       background: white;
-      padding: 30px 20px;
+      padding: 30px 20px 80px;
       border-radius: 20px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2);
       width: 90%;
       max-width: 350px;
-      position: relative;
+      height: 300px;
       overflow: hidden;
     }
 
     h2 {
-      margin-bottom: 30px;
-      color: #333;
+      margin: 0;
+      margin-bottom: 20px;
       font-size: 22px;
     }
 
     button {
-      width: 100%;
-      padding: 18px;
-      font-size: 18px;
+      position: absolute;
+      padding: 14px 22px;
+      font-size: 16px;
       border: none;
-      border-radius: 12px;
+      border-radius: 10px;
       cursor: pointer;
-      margin: 10px 0;
       transition: all 0.2s ease;
     }
 
     #yesBtn {
-      background-color: #ff4d6d;
+      background: #ff4d6d;
       color: white;
-      position: relative;
+      left: 20px;
+      top: 80px;
     }
 
     #noBtn {
-      background-color: #4CAF50;
+      background: #4CAF50;
       color: white;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
     }
   </style>
 </head>
@@ -60,12 +64,13 @@
 
 <div class="container" id="box">
   <h2 id="title">Are you still angry on me? 🥺</h2>
-  <button id="yesBtn" onclick="moveYes()">Yes</button>
-  <button id="noBtn" onclick="goNo()">No</button>
+  <button id="yesBtn">Yes</button>
+  <button id="noBtn">No</button>
 </div>
 
 <script>
 let scale = 1;
+let index = 0;
 
 let messages = [
   "Are you still angry on me? 🥺",
@@ -75,63 +80,59 @@ let messages = [
   "You’re not giving up huh 😤"
 ];
 
-let index = 0;
+// 🔊 audio (iPhone fix)
+const audio = new Audio("https://www.soundjay.com/human/sounds/aww-01.mp3");
+let audioUnlocked = false;
 
-// 🔊 sound
-const awwSound = new Audio("https://www.soundjay.com/human/sounds/aww-01.mp3");
+document.body.addEventListener("touchstart", unlockAudio, { once: true });
+document.body.addEventListener("click", unlockAudio, { once: true });
+
+function unlockAudio() {
+  audio.play().then(() => {
+    audio.pause();
+    audio.currentTime = 0;
+    audioUnlocked = true;
+  }).catch(() => {});
+}
+
+const yesBtn = document.getElementById("yesBtn");
+const noBtn = document.getElementById("noBtn");
+const box = document.getElementById("box");
+const title = document.getElementById("title");
+
+yesBtn.addEventListener("click", moveYes);
+noBtn.addEventListener("click", goNo);
 
 function moveYes() {
-  const yesBtn = document.getElementById("yesBtn");
-  const noBtn = document.getElementById("noBtn");
-  const title = document.getElementById("title");
-
-  // 🔊 sound
-  awwSound.currentTime = 0;
-  awwSound.play();
-
-  // 📳 vibration
-  if (navigator.vibrate) {
-    navigator.vibrate(100);
+  // 🔊 sound (now works better on iPhone)
+  if (audioUnlocked) {
+    audio.currentTime = 0;
+    audio.play();
   }
+
+  // ❌ vibration skipped (not supported on iPhone)
 
   // shrink
-  scale *= 0.8;
+  scale *= 0.85;
   yesBtn.style.transform = `scale(${scale})`;
 
-  let tries = 0;
-  let safe = false;
+  // SAFE movement inside container
+  const boxRect = box.getBoundingClientRect();
+  const btnRect = yesBtn.getBoundingClientRect();
 
-  while (!safe && tries < 30) {
-    let x = Math.random() * 200 - 100;
-    let y = Math.random() * 200 - 100;
+  const padding = 10;
 
-    yesBtn.style.left = x + "px";
-    yesBtn.style.top = y + "px";
+  const minX = padding;
+  const maxX = box.clientWidth - btnRect.width - padding;
 
-    const yesRect = yesBtn.getBoundingClientRect();
-    const noRect = noBtn.getBoundingClientRect();
-    const titleRect = title.getBoundingClientRect();
+  const minY = 70; // below title
+  const maxY = box.clientHeight - 80; // above NO button
 
-    // 🚫 avoid overlapping NO button
-    const overlapNo = (
-      yesRect.right > noRect.left &&
-      yesRect.left < noRect.right &&
-      yesRect.bottom > noRect.top &&
-      yesRect.top < noRect.bottom
-    );
+  let x = Math.random() * (maxX - minX) + minX;
+  let y = Math.random() * (maxY - minY) + minY;
 
-    // 🚫 avoid overlapping MESSAGE
-    const overlapTitle = (
-      yesRect.right > titleRect.left &&
-      yesRect.left < titleRect.right &&
-      yesRect.bottom > titleRect.top &&
-      yesRect.top < titleRect.bottom
-    );
-
-    safe = !(overlapNo || overlapTitle);
-
-    tries++;
-  }
+  yesBtn.style.left = x + "px";
+  yesBtn.style.top = y + "px";
 
   // change message
   index = (index + 1) % messages.length;
@@ -139,8 +140,7 @@ function moveYes() {
 }
 
 function goNo() {
-  const box = document.getElementById("box");
-  box.innerHTML = "<h2>Thank you 🙂</h2>";
+  box.innerHTML = "<h2>Okay 🙂</h2>";
 
   setTimeout(() => {
     window.open('', '_self');
