@@ -23,6 +23,7 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.2);
       width: 90%;
       max-width: 350px;
+      position: relative;
     }
 
     h2 {
@@ -42,14 +43,12 @@
       transition: all 0.25s ease;
     }
 
-    /* YES = red + tricky 😈 */
     #yesBtn {
       background-color: #ff4d6d;
       color: white;
       position: relative;
     }
 
-    /* NO = green + normal ✅ */
     #noBtn {
       background-color: #4CAF50;
       color: white;
@@ -58,31 +57,70 @@
 </head>
 <body>
 
-<div class="container" id="mainBox">
-  <h2>Are you still angry on me? 🥺</h2>
-  <button id="yesBtn" onclick="goYes()">Yes</button>
+<div class="container" id="box">
+  <h2 id="title">Are you still angry on me? 🥺</h2>
+  <button id="yesBtn">Yes</button>
   <button id="noBtn" onclick="goNo()">No</button>
 </div>
 
 <script>
 let scale = 1;
 
-/* YES shrinks + moves */
-function goYes() {
-  const btn = document.getElementById("yesBtn");
+let messages = [
+  "Are you still angry on me? 🥺",
+  "Really? 😟",
+  "Still?? 😭",
+  "Okay this is getting serious 😶",
+  "You’re not giving up huh 😤"
+];
 
-  scale *= 0.75;
-  btn.style.transform = `scale(${scale})`;
+let index = 0;
 
-  btn.style.left = (Math.random() * 150 - 75) + "px";
-  btn.style.top = (Math.random() * 150 - 75) + "px";
+const yesBtn = document.getElementById("yesBtn");
+const noBtn = document.getElementById("noBtn");
+const title = document.getElementById("title");
+
+yesBtn.addEventListener("click", moveYes);
+yesBtn.addEventListener("touchstart", moveYes);
+yesBtn.addEventListener("mouseover", moveYes);
+
+function moveYes() {
+  scale *= 0.8;
+  yesBtn.style.transform = `scale(${scale})`;
+
+  let tries = 0;
+  let safe = false;
+
+  while (!safe && tries < 20) {
+    let x = Math.random() * 200 - 100;
+    let y = Math.random() * 200 - 100;
+
+    yesBtn.style.left = x + "px";
+    yesBtn.style.top = y + "px";
+
+    // get positions
+    const yesRect = yesBtn.getBoundingClientRect();
+    const noRect = noBtn.getBoundingClientRect();
+
+    // check overlap
+    safe = !(
+      yesRect.right > noRect.left &&
+      yesRect.left < noRect.right &&
+      yesRect.bottom > noRect.top &&
+      yesRect.top < noRect.bottom
+    );
+
+    tries++;
+  }
+
+  // change message
+  index = (index + 1) % messages.length;
+  title.innerText = messages[index];
 }
 
-/* NO shows message → waits → tries to close */
 function goNo() {
-  const box = document.getElementById("mainBox");
-
-  box.innerHTML = "<h2>Thank you 🙂</h2>";
+  const box = document.getElementById("box");
+  box.innerHTML = "<h2>You are sweet 🙂</h2>";
 
   setTimeout(() => {
     window.open('', '_self');
