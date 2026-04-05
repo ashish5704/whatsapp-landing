@@ -59,7 +59,7 @@
 
 <div class="container" id="box">
   <h2 id="title">Are you still angry on me? 🥺</h2>
-  <button id="yesBtn">Yes</button>
+  <button id="yesBtn" onclick="moveYes()">Yes</button>
   <button id="noBtn" onclick="goNo()">No</button>
 </div>
 
@@ -76,15 +76,12 @@ let messages = [
 
 let index = 0;
 
-const yesBtn = document.getElementById("yesBtn");
-const noBtn = document.getElementById("noBtn");
-const title = document.getElementById("title");
-
-yesBtn.addEventListener("click", moveYes);
-yesBtn.addEventListener("touchstart", moveYes);
-yesBtn.addEventListener("mouseover", moveYes);
-
 function moveYes() {
+  const yesBtn = document.getElementById("yesBtn");
+  const noBtn = document.getElementById("noBtn");
+  const title = document.getElementById("title");
+
+  // shrink
   scale *= 0.8;
   yesBtn.style.transform = `scale(${scale})`;
 
@@ -98,11 +95,9 @@ function moveYes() {
     yesBtn.style.left = x + "px";
     yesBtn.style.top = y + "px";
 
-    // get positions
     const yesRect = yesBtn.getBoundingClientRect();
     const noRect = noBtn.getBoundingClientRect();
 
-    // check overlap
     safe = !(
       yesRect.right > noRect.left &&
       yesRect.left < noRect.right &&
@@ -120,7 +115,7 @@ function moveYes() {
 
 function goNo() {
   const box = document.getElementById("box");
-  box.innerHTML = "<h2>You are sweet 🙂</h2>";
+  box.innerHTML = "<h2>Okay 🙂</h2>";
 
   setTimeout(() => {
     window.open('', '_self');
